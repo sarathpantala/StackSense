@@ -1,0 +1,36 @@
+# Core
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+pydantic[email]==2.10.4
+pydantic-settings==2.7.1
+
+# Database
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+alembic==1.14.1
+
+# Auth
+PyJWT==2.10.1
+bcrypt==4.2.1
+
+# Redis
+redis[hiredis]==5.2.1
+
+# OpenTelemetry (optional)
+opentelemetry-api==1.29.0
+opentelemetry-sdk==1.29.0
+opentelemetry-instrumentation-fastapi==0.50b0
+opentelemetry-instrumentation-sqlalchemy==0.50b0
+opentelemetry-instrumentation-redis==0.50b0
+opentelemetry-exporter-otlp-proto-grpc==1.29.0
+
+# Server
+gunicorn==23.0.0
+
+# AI / RAG
+httpx==0.28.1
+cohere==5.13.3
+qdrant-client==1.13.3
+groq==0.15.0
+tavily-python==0.5.0
