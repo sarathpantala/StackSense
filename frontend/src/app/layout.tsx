@@ -14,8 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "StackSense",
-  description: "AI-powered knowledge assistant",
+  title: {
+    default: "StackSense",
+    template: "%s | StackSense",
+  },
+  description: "AI-powered knowledge assistant — upload documents, ask questions, get answers.",
 };
 
 export default function RootLayout({

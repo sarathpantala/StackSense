@@ -181,13 +181,13 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <div className="flex h-14 items-center justify-between px-3">
         {!collapsed ? (
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 shadow-md shadow-violet-500/20">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-500 shadow-md shadow-indigo-500/20">
               <Zap className="h-4 w-4 text-white" />
             </div>
             <span className="gradient-text text-sm font-bold tracking-tight">StackSense</span>
           </Link>
         ) : (
-          <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 shadow-md shadow-violet-500/20">
+          <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-500 shadow-md shadow-indigo-500/20">
             <Zap className="h-4 w-4 text-white" />
           </div>
         )}
@@ -208,7 +208,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             onClick={() => setShowWorkspaceSwitcher(!showWorkspaceSwitcher)}
             className="group flex w-full items-center gap-2.5 rounded-xl border border-border bg-background px-3 py-2.5 transition-all duration-150 hover:border-accent/30 hover:shadow-sm"
           >
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/20 to-indigo-500/20">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500/20 to-cyan-500/20">
               <Layers className="h-3.5 w-3.5 text-accent" />
             </div>
             <div className="flex-1 text-left">
@@ -247,7 +247,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         <Button
           onClick={() => router.push("/chat")}
           className={cn(
-            "w-full justify-start gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/20 transition-all hover:shadow-lg hover:shadow-violet-500/30 hover:brightness-110",
+            "w-full justify-start gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-md shadow-indigo-500/20 transition-all hover:shadow-lg hover:shadow-indigo-500/30 hover:brightness-110",
             collapsed && "justify-center px-0",
           )}
         >
@@ -444,7 +444,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           )}
         >
           <Avatar className="h-8 w-8 shrink-0 ring-2 ring-accent/20">
-            <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-500 text-[11px] font-semibold text-white">
+            <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-cyan-500 text-[11px] font-semibold text-white">
               {initials}
             </AvatarFallback>
           </Avatar>

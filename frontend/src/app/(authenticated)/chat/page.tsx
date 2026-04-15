@@ -95,13 +95,17 @@ export default function ChatPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const activeConversationId = useRef<string | null>(conversationId);
+  const isStreamingRef = useRef(false);
 
   const createConversation = useCreateConversation();
   const addMessage = useAddMessage();
   const { data: conversationData } = useConversation(conversationId);
 
+  // Sync conversation data from DB, but skip while actively streaming
+  // to avoid overwriting the live-updating messages
   useEffect(() => {
     activeConversationId.current = conversationId;
+    if (isStreamingRef.current) return;
     if (conversationData?.messages) {
       setMessages(
         conversationData.messages.map((m) => ({
@@ -180,6 +184,7 @@ export default function ChatPage() {
 
       setMessages((prev) => [...prev, userMessage, assistantMessage]);
       setIsStreaming(true);
+      isStreamingRef.current = true;
 
       addMessage.mutate({ conversationId: convId, role: "user", content: rawQuery });
 
@@ -277,6 +282,7 @@ export default function ChatPage() {
         );
       } finally {
         setIsStreaming(false);
+        isStreamingRef.current = false;
         setActiveStep(null);
       }
     },

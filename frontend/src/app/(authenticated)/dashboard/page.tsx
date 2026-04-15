@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
@@ -15,7 +15,6 @@ import {
   Database,
   ArrowRight,
   ArrowUpRight,
-  ArrowDownRight,
   Clock,
   Zap,
   Shield,
@@ -36,6 +35,8 @@ import {
   CheckCircle2,
   XCircle,
   Gauge,
+  Globe,
+  Layers,
 } from "lucide-react";
 import Link from "next/link";
 import { useConversations } from "@/hooks/use-conversations";
@@ -58,51 +59,57 @@ function timeAgo(dateStr: string): string {
 const quickActions = [
   {
     title: "Start a Chat",
-    description: "Query your knowledge base",
+    description: "Query your knowledge base with AI",
     href: "/chat",
     icon: MessageSquare,
-    gradient: "from-violet-500 to-indigo-500",
-    shadow: "shadow-violet-500/20",
+    color: "text-indigo-500",
+    bg: "bg-indigo-500/10 dark:bg-indigo-500/15",
+    hoverGlow: "group-hover:shadow-indigo-500/20",
   },
   {
     title: "Upload Documents",
     description: "Ingest new knowledge sources",
     href: "/documents",
     icon: FileUp,
-    gradient: "from-amber-500 to-orange-500",
-    shadow: "shadow-amber-500/20",
+    color: "text-cyan-500",
+    bg: "bg-cyan-500/10 dark:bg-cyan-500/15",
+    hoverGlow: "group-hover:shadow-cyan-500/20",
   },
   {
     title: "Debug Incident",
     description: "AI-powered root cause analysis",
     href: "/chat",
     icon: Bug,
-    gradient: "from-rose-500 to-pink-500",
-    shadow: "shadow-rose-500/20",
+    color: "text-rose-500",
+    bg: "bg-rose-500/10 dark:bg-rose-500/15",
+    hoverGlow: "group-hover:shadow-rose-500/20",
   },
   {
     title: "Analyze Logs",
     description: "Deep dive into system logs",
     href: "/chat",
     icon: Search,
-    gradient: "from-cyan-500 to-blue-500",
-    shadow: "shadow-cyan-500/20",
+    color: "text-sky-500",
+    bg: "bg-sky-500/10 dark:bg-sky-500/15",
+    hoverGlow: "group-hover:shadow-sky-500/20",
   },
   {
     title: "Explain Config",
     description: "Understand configuration files",
     href: "/chat",
     icon: FileCode,
-    gradient: "from-emerald-500 to-teal-500",
-    shadow: "shadow-emerald-500/20",
+    color: "text-emerald-500",
+    bg: "bg-emerald-500/10 dark:bg-emerald-500/15",
+    hoverGlow: "group-hover:shadow-emerald-500/20",
   },
   {
     title: "Knowledge Search",
     description: "Semantic search across docs",
     href: "/chat",
     icon: Brain,
-    gradient: "from-purple-500 to-fuchsia-500",
-    shadow: "shadow-purple-500/20",
+    color: "text-purple-500",
+    bg: "bg-purple-500/10 dark:bg-purple-500/15",
+    hoverGlow: "group-hover:shadow-purple-500/20",
   },
 ];
 
@@ -161,7 +168,6 @@ export default function DashboardPage() {
     ? Math.round(latencyHistory.reduce((a, b) => a + b, 0) / latencyHistory.length)
     : null;
 
-  // Monthly forecast
   const daysInMonth = 30;
   const dayOfMonth = new Date().getDate();
   const forecastConversations = conversations?.length
@@ -179,21 +185,33 @@ export default function DashboardPage() {
     return "Good evening";
   })();
 
+  const allHealthy = health.data?.status === "healthy" &&
+    health.data?.postgres === "ok" &&
+    health.data?.redis === "ok" &&
+    stats.data?.status === "green";
+
+  const healthyServiceCount = [
+    health.data?.status === "healthy",
+    health.data?.postgres === "ok",
+    health.data?.redis === "ok",
+    stats.data?.status === "green",
+  ].filter(Boolean).length;
+
   return (
     <div className="mx-auto max-w-7xl p-6 lg:p-8">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-500 shadow-lg shadow-violet-500/25">
+            <div className="gradient-primary flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg shadow-indigo-500/20">
               <Sparkles className="h-6 w-6 text-white" />
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">
                 {greeting}{user?.full_name ? `, ${user.full_name}` : ""}
               </h1>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                Here&apos;s your workspace overview for{" "}
+              <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+                Here&apos;s your infrastructure overview &middot;{" "}
                 {new Date().toLocaleDateString("en-US", {
                   weekday: "long",
                   month: "long",
@@ -204,18 +222,49 @@ export default function DashboardPage() {
           </div>
           <div className="hidden items-center gap-3 sm:flex">
             {lastChecked && (
-              <span className="flex items-center gap-1.5 rounded-lg bg-surface px-3 py-1.5 text-xs text-zinc-400">
+              <span className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs text-zinc-400">
                 <RefreshCw className="h-3 w-3" />
                 {lastChecked.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </span>
             )}
-            <div className="flex items-center gap-1.5 rounded-lg bg-surface px-3 py-1.5 text-xs">
+            <div className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs">
               <span className={cn(
                 "h-2 w-2 rounded-full",
-                health.data?.status === "healthy" ? "bg-emerald-500 animate-pulse-glow" : "bg-zinc-400",
+                allHealthy ? "bg-emerald-500 animate-status-ring" : "bg-zinc-400",
               )} />
-              <span className="text-zinc-500">{health.data?.status === "healthy" ? "All systems operational" : "Checking..."}</span>
+              <span className="text-zinc-500">{allHealthy ? "All systems operational" : "Checking..."}</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* AI Insight Banner */}
+      <div className="mb-8 overflow-hidden rounded-2xl border border-indigo-200/50 bg-gradient-to-r from-indigo-50 via-white to-cyan-50 dark:border-indigo-500/10 dark:from-indigo-950/30 dark:via-background dark:to-cyan-950/20">
+        <div className="flex items-center gap-4 px-6 py-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-400 shadow-md shadow-indigo-500/20">
+            <Brain className="h-5 w-5 text-white" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-foreground">System Intelligence</p>
+            <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+              {allHealthy
+                ? `All ${healthyServiceCount} services operational. Avg response time ${avgLatency ?? "—"}ms. ${stats.data?.vectors_count?.toLocaleString() ?? 0} vectors indexed across ~${docCount} documents.`
+                : healthyServiceCount > 0
+                  ? `${healthyServiceCount}/4 services online. ${4 - healthyServiceCount} service(s) need attention.`
+                  : "Initializing health checks across your infrastructure..."}
+            </p>
+          </div>
+          <div className="hidden items-center gap-2 sm:flex">
+            {avgLatency !== null && avgLatency < 200 && (
+              <span className="flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-600 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400">
+                <Zap className="h-3 w-3" />
+                Fast
+              </span>
+            )}
+            <span className="flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[11px] font-medium text-indigo-600 dark:border-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-400">
+              <Globe className="h-3 w-3" />
+              {uptimePct}% uptime
+            </span>
           </div>
         </div>
       </div>
@@ -224,17 +273,17 @@ export default function DashboardPage() {
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           icon={<Activity className="h-4 w-4" />}
-          iconBg="bg-emerald-500/10"
+          iconBg="bg-emerald-500/10 dark:bg-emerald-500/15"
           iconColor="text-emerald-500"
           label="System Status"
           value={
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <span className={cn(
                 "h-2.5 w-2.5 rounded-full",
-                health.data?.status === "healthy" ? "bg-emerald-500 animate-pulse-glow" : "bg-zinc-400",
+                allHealthy ? "bg-emerald-500 animate-status-ring" : "bg-zinc-400",
               )} />
               <span className="text-lg font-bold">
-                {health.data?.status === "healthy" ? "Healthy" : "Checking"}
+                {allHealthy ? "Healthy" : "Degraded"}
               </span>
             </div>
           }
@@ -244,17 +293,18 @@ export default function DashboardPage() {
                 <Timer className="h-3 w-3" />
                 {healthLatency !== null ? `${healthLatency}ms` : "—"}
               </span>
-              <span className="text-zinc-300 dark:text-zinc-700">·</span>
-              <span className="text-zinc-400">{uptimePct}% uptime</span>
+              <span className="text-zinc-200 dark:text-zinc-800">|</span>
+              <span className="text-zinc-400">{healthyServiceCount}/4 services</span>
             </div>
           }
           sparkline={latencyHistory}
           sparklineColor={avgLatency && avgLatency < 200 ? "#10b981" : "#f59e0b"}
+          priority
         />
         <MetricCard
           icon={<Database className="h-4 w-4" />}
-          iconBg="bg-blue-500/10"
-          iconColor="text-blue-500"
+          iconBg="bg-sky-500/10 dark:bg-sky-500/15"
+          iconColor="text-sky-500"
           label="Knowledge Base"
           value={
             <div className="flex items-baseline gap-1.5">
@@ -267,15 +317,15 @@ export default function DashboardPage() {
           detail={
             <div className="mt-3 flex items-center gap-3 text-[11px]">
               <span className="text-zinc-400">~{docCount} documents</span>
-              <span className="text-zinc-300 dark:text-zinc-700">·</span>
+              <span className="text-zinc-200 dark:text-zinc-800">|</span>
               <span className="text-zinc-400">{stats.data?.collection ?? "—"}</span>
             </div>
           }
         />
         <MetricCard
           icon={<MessageSquare className="h-4 w-4" />}
-          iconBg="bg-violet-500/10"
-          iconColor="text-violet-500"
+          iconBg="bg-indigo-500/10 dark:bg-indigo-500/15"
+          iconColor="text-indigo-500"
           label="Conversations"
           value={
             <div className="flex items-baseline gap-1.5">
@@ -296,7 +346,7 @@ export default function DashboardPage() {
         />
         <MetricCard
           icon={<Gauge className="h-4 w-4" />}
-          iconBg="bg-amber-500/10"
+          iconBg="bg-amber-500/10 dark:bg-amber-500/15"
           iconColor="text-amber-500"
           label="Avg Latency"
           value={
@@ -310,7 +360,7 @@ export default function DashboardPage() {
           detail={
             <div className="mt-3 flex items-center gap-3 text-[11px]">
               <span className="text-zinc-400">{errorRate}% error rate</span>
-              <span className="text-zinc-300 dark:text-zinc-700">·</span>
+              <span className="text-zinc-200 dark:text-zinc-800">|</span>
               <span className="text-zinc-400">{healthCheckCount} checks</span>
             </div>
           }
@@ -328,22 +378,22 @@ export default function DashboardPage() {
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {quickActions.map((action) => (
                 <Link key={action.title} href={action.href}>
-                  <Card className="card-hover group cursor-pointer border-transparent bg-surface transition-all duration-200 hover:border-border hover:shadow-lg">
+                  <Card className={cn(
+                    "glow-hover group cursor-pointer border border-transparent bg-surface transition-all duration-250 hover:border-border hover:shadow-xl",
+                    action.hoverGlow,
+                  )}>
                     <CardContent className="p-4">
-                      <div
-                        className={cn(
-                          "mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br shadow-lg transition-transform duration-200 group-hover:scale-110",
-                          action.gradient,
-                          action.shadow,
-                        )}
-                      >
-                        <action.icon className="h-5 w-5 text-white" />
+                      <div className={cn(
+                        "mb-3 flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110",
+                        action.bg,
+                      )}>
+                        <action.icon className={cn("h-5 w-5", action.color)} />
                       </div>
                       <p className="text-sm font-semibold">{action.title}</p>
                       <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
                         {action.description}
                       </p>
-                      <div className="mt-3 flex items-center gap-1 text-[11px] font-medium text-accent opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                      <div className="mt-3 flex items-center gap-1 text-[11px] font-medium text-accent opacity-0 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100">
                         Open <ArrowRight className="h-3 w-3" />
                       </div>
                     </CardContent>
@@ -356,7 +406,7 @@ export default function DashboardPage() {
           {/* System Health */}
           <section>
             <SectionHeader icon={<Shield className="h-3.5 w-3.5" />} title="System Health" />
-            <Card className="overflow-hidden">
+            <Card className="overflow-hidden border">
               <CardContent className="p-0">
                 <div className="divide-y divide-border">
                   <HealthRow
@@ -391,7 +441,7 @@ export default function DashboardPage() {
                   />
                 </div>
                 {/* Summary Footer */}
-                <div className="flex items-center justify-between border-t border-border bg-surface px-5 py-3">
+                <div className="flex items-center justify-between border-t border-border bg-surface/80 px-5 py-3">
                   <div className="flex items-center gap-4 text-[11px]">
                     <span className="flex items-center gap-1.5 text-emerald-500">
                       <CheckCircle2 className="h-3.5 w-3.5" />
@@ -426,13 +476,30 @@ export default function DashboardPage() {
           {/* Infrastructure */}
           <section>
             <SectionHeader icon={<Cpu className="h-3.5 w-3.5" />} title="Infrastructure" />
-            <Card>
+            <Card className="border">
               <CardContent className="p-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <ServiceCard label="API" ok={health.data?.status === "healthy"} detail="FastAPI" />
-                  <ServiceCard label="PostgreSQL" ok={health.data?.postgres === "ok"} detail="Database" />
-                  <ServiceCard label="Redis" ok={health.data?.redis === "ok"} detail="Cache" />
-                  <ServiceCard label="Qdrant" ok={stats.data?.status === "green"} detail="Vectors" />
+                  <ServiceCard
+                    label="API"
+                    ok={health.data?.status === "healthy"}
+                    detail="FastAPI"
+                    latency={healthLatency}
+                  />
+                  <ServiceCard
+                    label="PostgreSQL"
+                    ok={health.data?.postgres === "ok"}
+                    detail="Database"
+                  />
+                  <ServiceCard
+                    label="Redis"
+                    ok={health.data?.redis === "ok"}
+                    detail="Cache"
+                  />
+                  <ServiceCard
+                    label="Qdrant"
+                    ok={stats.data?.status === "green"}
+                    detail={stats.data ? `${stats.data.vectors_count.toLocaleString()} vec` : "Vectors"}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -441,7 +508,7 @@ export default function DashboardPage() {
           {/* Recent Activity */}
           <section>
             <SectionHeader icon={<Clock className="h-3.5 w-3.5" />} title="Recent Activity" />
-            <Card>
+            <Card className="border">
               <CardContent className="p-0">
                 {recentChats.length > 0 ? (
                   <div className="divide-y divide-border">
@@ -454,7 +521,7 @@ export default function DashboardPage() {
                         <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent-muted">
                           <MessageSquare className="h-3.5 w-3.5 text-accent" />
                           {i === 0 && (
-                            <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border border-background bg-emerald-500" />
+                            <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border border-background bg-cyan-400" />
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
@@ -485,10 +552,10 @@ export default function DashboardPage() {
           {/* Usage & Forecast */}
           <section>
             <SectionHeader icon={<TrendingUp className="h-3.5 w-3.5" />} title="Usage & Forecast" />
-            <Card>
+            <Card className="border">
               <CardContent className="space-y-4 p-5">
                 <UsageRow
-                  icon={<HardDrive className="h-3.5 w-3.5 text-blue-500" />}
+                  icon={<HardDrive className="h-3.5 w-3.5 text-sky-500" />}
                   label="Vector Storage"
                   value={stats.data?.vectors_count ?? 0}
                   max={10000}
@@ -496,7 +563,7 @@ export default function DashboardPage() {
                   estimate={`~$${((stats.data?.vectors_count ?? 0) * 0.0001).toFixed(2)}/mo`}
                 />
                 <UsageRow
-                  icon={<MessageSquare className="h-3.5 w-3.5 text-violet-500" />}
+                  icon={<MessageSquare className="h-3.5 w-3.5 text-indigo-500" />}
                   label="Conversations"
                   value={conversations?.length ?? 0}
                   max={1000}
@@ -512,17 +579,28 @@ export default function DashboardPage() {
                 />
 
                 {/* Forecast Card */}
-                <div className="rounded-xl border border-border bg-gradient-to-br from-violet-500/5 to-indigo-500/5 p-4">
-                  <div className="flex items-center gap-2 text-xs font-semibold">
-                    <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
-                    Monthly Forecast
+                <div className="relative overflow-hidden rounded-xl border border-indigo-200/50 bg-gradient-to-br from-indigo-50/80 via-white to-cyan-50/80 p-4 dark:border-indigo-500/10 dark:from-indigo-950/40 dark:via-background dark:to-cyan-950/30">
+                  <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-gradient-to-br from-indigo-400/10 to-cyan-400/10 blur-2xl" />
+                  <div className="relative">
+                    <div className="flex items-center gap-2 text-xs font-semibold">
+                      <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
+                      Monthly Forecast
+                    </div>
+                    <p className="mt-2 text-3xl font-bold tracking-tight">
+                      <span className="gradient-text">${forecastCost}</span>
+                    </p>
+                    <p className="mt-1.5 text-[11px] text-zinc-400">
+                      Based on ~{forecastConversations} projected conversations
+                    </p>
+                    <div className="mt-3 flex items-center gap-2">
+                      <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-medium text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
+                        {stats.data?.vectors_count?.toLocaleString() ?? 0} vectors
+                      </span>
+                      <span className="rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-medium text-cyan-600 dark:bg-cyan-950/50 dark:text-cyan-400">
+                        {conversations?.length ?? 0} queries
+                      </span>
+                    </div>
                   </div>
-                  <p className="mt-1.5 text-2xl font-bold tracking-tight">
-                    <span className="gradient-text">${forecastCost}</span>
-                  </p>
-                  <p className="mt-1 text-[11px] text-zinc-400">
-                    Based on ~{forecastConversations} projected conversations
-                  </p>
                 </div>
 
                 {/* Usage Alerts */}
@@ -543,7 +621,7 @@ export default function DashboardPage() {
 
 function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
   return (
-    <h2 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-zinc-400">
+    <h2 className="mb-4 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-zinc-400">
       {icon}
       {title}
     </h2>
@@ -554,7 +632,7 @@ function Sparkline({
   data,
   width = 80,
   height = 28,
-  color = "#7C3AED",
+  color = "#6366F1",
 }: {
   data: number[];
   width?: number;
@@ -609,6 +687,7 @@ function MetricCard({
   detail,
   sparkline,
   sparklineColor,
+  priority,
 }: {
   icon: React.ReactNode;
   iconBg?: string;
@@ -618,9 +697,13 @@ function MetricCard({
   detail: React.ReactNode;
   sparkline?: number[];
   sparklineColor?: string;
+  priority?: boolean;
 }) {
   return (
-    <Card className="card-hover overflow-hidden">
+    <Card className={cn(
+      "card-hover overflow-hidden border transition-shadow",
+      priority && "ring-1 ring-emerald-500/20 dark:ring-emerald-500/10",
+    )}>
       <CardContent className="p-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-medium text-zinc-400">
@@ -640,24 +723,34 @@ function MetricCard({
   );
 }
 
-function ServiceCard({ label, ok, detail }: { label: string; ok?: boolean; detail: string }) {
+function ServiceCard({ label, ok, detail, latency }: { label: string; ok?: boolean; detail: string; latency?: number | null }) {
   return (
     <div className={cn(
       "rounded-xl border p-3 transition-all duration-200",
       ok
-        ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-900/50 dark:bg-emerald-950/20"
+        ? "border-emerald-200/60 bg-emerald-50/50 dark:border-emerald-900/40 dark:bg-emerald-950/20"
         : ok === false
-          ? "border-red-200 bg-red-50/50 dark:border-red-900/50 dark:bg-red-950/20"
+          ? "border-red-200/60 bg-red-50/50 dark:border-red-900/40 dark:bg-red-950/20"
           : "border-border bg-surface",
     )}>
       <div className="flex items-center gap-2">
         <span className={cn(
           "h-2 w-2 rounded-full",
-          ok ? "bg-emerald-500" : ok === false ? "bg-red-400" : "bg-zinc-300 dark:bg-zinc-600",
+          ok ? "bg-emerald-500 animate-status-ring" : ok === false ? "bg-red-400 animate-pulse" : "bg-zinc-300 dark:bg-zinc-600",
         )} />
         <span className="text-xs font-semibold">{label}</span>
       </div>
-      <p className="mt-1 text-[10px] text-zinc-400">{detail}</p>
+      <div className="mt-1.5 flex items-center justify-between">
+        <p className="text-[10px] text-zinc-400">{detail}</p>
+        {latency !== undefined && latency !== null && (
+          <span className={cn(
+            "text-[10px] font-semibold tabular-nums",
+            latency < 200 ? "text-emerald-500" : "text-amber-500",
+          )}>
+            {latency}ms
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -741,7 +834,7 @@ function UsageRow({
       ? "from-red-500 to-rose-500"
       : pct > 50
         ? "from-amber-500 to-orange-500"
-        : "from-violet-500 to-indigo-500";
+        : "from-indigo-500 to-cyan-500";
 
   return (
     <div>
